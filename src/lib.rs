@@ -1,116 +1,67 @@
-#[cfg(feature = "no_std")]
-use core::slice::Iter;
-#[cfg(not(feature = "no_std"))]
-use std::slice::Iter;
+mod weighted_graph;
 
-#[cfg(feature = "no_std")]
-use core::fmt::Debug;
-#[cfg(not(feature = "no_std"))]
-use std::fmt::Debug;
+pub use weighted_graph::WeightedGraph;
 
-#[cfg(feature = "no_std")]
-use core::clone::Clone;
-#[cfg(not(feature = "no_std"))]
-use std::clone::Clone;
+#[derive(Clone, Debug, PartialEq)]
+/// Graph operation error
+pub enum Error {
+    /// There is no node with the given id in the graph
+    NoSuchNode,
 
-#[cfg(feature = "no_std")]
-use core::cmp::PartialEq;
-#[cfg(not(feature = "no_std"))]
-use std::cmp::PartialEq;
+    /// There is no such edge in the graph
+    NoSuchEdge,
 
-#[derive(Clone, PartialEq, Debug)]
-pub struct Graph<Node, Edge> {
-    adj_list: Vec<Vec<(Edge, usize)>>,
-    nodes: Vec<Node>,
+    /// Could not add an edge to the graph
+    CannotAddEdge,
+
+    // This node already exists
+    NodeAlreadyExists,
+
+    // This edge already exists
+    EdgeAlreadyExists,
+
+    /// The operation cannot be performed as it will
+    /// create a cycle in the graph.
+    CycleError,
 }
 
-impl<Node: PartialEq + Clone + Debug, Edge: PartialEq + Clone + Debug> Graph<Node, Edge> {
-    pub fn new() -> Self {
-        Self {
-            adj_list: Vec::new(),
-            nodes: Vec::new(),
-        }
-    }
+pub trait AbstractGraph<T> {
+    /// Returns true if there are no nodes, or false otherwise.
+    fn is_empty(&self) -> bool;
 
-    pub fn find_node(&self, node: Node) -> Option<usize> {
-        self.nodes.iter().position(|x| x == &node)
-    }
+    /// Returns the number of nodes in this graph.
+    fn node_len(&self) -> usize;
 
-    pub fn node_iter(&self) -> Iter<Node> {
-        self.nodes.iter()
-    }
+    /// Returns the number of edges in this graph.
+    fn edge_len(&self) -> usize;
 
-    pub fn nodes(&self) -> Vec<Node> {
-        self.nodes.clone()
-    }
+    /// Iterates the nodes of this graph
+    fn nodes(&self) -> Vec<T>;
 
-    pub fn edges(&self) -> Vec<(usize, usize, Edge)> {
-        let mut result = Vec::new();
-        for (from, list) in self.adj_list.iter().enumerate() {
-            for (edge, to) in list.clone() {
-                result.push((from, to, edge.clone()));
-            }
-        }
-        result
-    }
+    /// Returns true if node is a member, or false otherwise.
+    fn has_node(&self, node: &T) -> bool;
 
-    pub fn edge(&self, from: usize, to: usize) -> Option<Edge> {
-        for (edge, i) in self.adj_list[from].clone() {
-            if to == i {
-                return Some(edge.clone());
-            }
-        }
-        None
-    }
+    /// Iterates the neighbors of node.
+    fn neighbors(&self, node_id: usize) -> Result<Vec<usize>, Error>;
 
-    pub fn adj_list(&self) -> Vec<Vec<(Edge, usize)>> {
-        self.adj_list.clone()
-    }
+    /// Returns the number of neighbors connected to node.
+    fn degree(&self, node_id: usize) -> Result<usize, Error>;
 
-    pub fn neighbors(&self, node_id: usize) -> Vec<(Edge, usize)> {
-        assert!(node_id < self.adj_list.len());
-        self.adj_list[node_id].clone()
-    }
+    /// Returns true if an edge exists between source and target.
+    fn has_edge(&self, source_id: usize, target_id: usize) -> Result<bool, Error>;
 
-    pub fn degree(&self, node_id: usize) -> usize {
-        assert!(node_id < self.adj_list.len());
-        self.adj_list[node_id].len()
-    }
+    /// Returns the adjacency list
+    fn adj_list(&self) -> Vec<Vec<usize>>;
 
-    pub fn add_node(&mut self, node: Node) -> usize {
-        assert_eq!(self.nodes.len(), self.adj_list.len());
-        assert!(!self.nodes.contains(&node));
-        self.nodes.push(node);
-        self.adj_list.push(Vec::new());
-        assert_eq!(self.nodes.len(), self.adj_list.len());
-        self.nodes.len() - 1
-    }
+    // Returns the node corresponding to the id
+    fn node(&self, node_id: usize) -> Result<T, Error>;
 
-    pub fn add_edge(&mut self, from: usize, to: usize, edge: Edge) {
-        assert!(from < self.nodes.len());
-        assert!(to < self.nodes.len());
-        assert!(self.adj_list[from].iter().position(|x| x.1 == to) == None);
-        self.adj_list[from].push((edge, to));
-    }
+    // Returns the id of the node
+    fn node_id(&self, node: &T) -> Result<usize, Error>;
 
-    pub fn remove_edge(&mut self, from: usize, to: usize, edge: Edge) -> bool {
-        if let Some(index) = self.adj_list[from]
-            .iter()
-            .position(|x| (&x.0, &x.1) == (&edge, &to))
-        {
-            self.adj_list[from].remove(index);
-            true
-        } else {
-            false
-        }
-    }
-}
+    // Adds node and retuns node id
+    fn add_node(&mut self, node: T) -> Result<usize, Error>;
 
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        let result = 2 + 2;
-        assert_eq!(result, 4);
-    }
+    // Removes node and retuns node id
+    fn remove_node(&mut self, node_id: usize) -> Result<(), Error>;
 }
