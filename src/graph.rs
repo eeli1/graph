@@ -1,4 +1,4 @@
-use crate::{AbstractGraph, Error};
+use crate::Error;
 
 #[cfg(feature = "no_std")]
 use core::fmt::Debug;
@@ -16,7 +16,7 @@ use core::cmp::PartialEq;
 use std::cmp::PartialEq;
 
 #[derive(Clone, PartialEq, Debug)]
-pub struct WeightedGraph<Node, Edge>
+pub struct Graph<Node, Edge>
 where
     Node: PartialEq + Clone + Debug,
     Edge: PartialEq + Clone + Debug,
@@ -25,7 +25,7 @@ where
     nodes: Vec<Node>,
 }
 
-impl<Node: PartialEq + Clone + Debug, Edge: PartialEq + Clone + Debug> WeightedGraph<Node, Edge> {
+impl<Node: PartialEq + Clone + Debug, Edge: PartialEq + Clone + Debug> Graph<Node, Edge> {
     pub fn new() -> Self {
         Self {
             adj_list: Vec::new(),
@@ -78,20 +78,16 @@ impl<Node: PartialEq + Clone + Debug, Edge: PartialEq + Clone + Debug> WeightedG
             false
         }
     }
-}
 
-impl<Node: PartialEq + Clone + Debug, Edge: PartialEq + Clone + Debug> AbstractGraph<Node>
-    for WeightedGraph<Node, Edge>
-{
-    fn is_empty(&self) -> bool {
+    pub fn is_empty(&self) -> bool {
         self.nodes.is_empty()
     }
 
-    fn node_len(&self) -> usize {
+    pub fn node_len(&self) -> usize {
         self.nodes.len()
     }
 
-    fn edge_len(&self) -> usize {
+    pub fn edge_len(&self) -> usize {
         let mut sum = 0;
         for list in self.adj_list.clone() {
             sum += list.len();
@@ -99,15 +95,15 @@ impl<Node: PartialEq + Clone + Debug, Edge: PartialEq + Clone + Debug> AbstractG
         sum
     }
 
-    fn nodes(&self) -> Vec<Node> {
+    pub fn nodes(&self) -> Vec<Node> {
         self.nodes.clone()
     }
 
-    fn has_node(&self, node: &Node) -> bool {
+    pub fn has_node(&self, node: &Node) -> bool {
         self.nodes.contains(node)
     }
 
-    fn neighbors(&self, node_id: usize) -> Result<Vec<usize>, Error> {
+    pub fn neighbors(&self, node_id: usize) -> Result<Vec<usize>, Error> {
         if self.adj_list.len() < node_id {
             Err(Error::NoSuchNode)
         } else {
@@ -118,7 +114,7 @@ impl<Node: PartialEq + Clone + Debug, Edge: PartialEq + Clone + Debug> AbstractG
         }
     }
 
-    fn degree(&self, node_id: usize) -> Result<usize, Error> {
+    pub fn degree(&self, node_id: usize) -> Result<usize, Error> {
         if self.adj_list.len() < node_id {
             Err(Error::NoSuchNode)
         } else {
@@ -126,7 +122,7 @@ impl<Node: PartialEq + Clone + Debug, Edge: PartialEq + Clone + Debug> AbstractG
         }
     }
 
-    fn has_edge(&self, source_id: usize, target_id: usize) -> Result<bool, Error> {
+    pub fn has_edge(&self, source_id: usize, target_id: usize) -> Result<bool, Error> {
         if self.adj_list.len() < target_id {
             Err(Error::NoSuchNode)
         } else {
@@ -134,7 +130,7 @@ impl<Node: PartialEq + Clone + Debug, Edge: PartialEq + Clone + Debug> AbstractG
         }
     }
 
-    fn adj_list(&self) -> Vec<Vec<usize>> {
+    pub fn adj_list(&self) -> Vec<Vec<usize>> {
         let mut result = Vec::with_capacity(self.adj_list.len());
         for list in self.adj_list.clone() {
             result.push(list.iter().map(|(_, i)| i.clone()).collect());
@@ -143,7 +139,7 @@ impl<Node: PartialEq + Clone + Debug, Edge: PartialEq + Clone + Debug> AbstractG
         result
     }
 
-    fn node(&self, node_id: usize) -> Result<Node, Error> {
+    pub fn node(&self, node_id: usize) -> Result<Node, Error> {
         if self.nodes.len() < node_id {
             Err(Error::NoSuchNode)
         } else {
@@ -151,7 +147,7 @@ impl<Node: PartialEq + Clone + Debug, Edge: PartialEq + Clone + Debug> AbstractG
         }
     }
 
-    fn node_id(&self, node: &Node) -> Result<usize, Error> {
+    pub fn node_id(&self, node: &Node) -> Result<usize, Error> {
         if let Some(i) = self.nodes.iter().position(|x| x == node) {
             Ok(i)
         } else {
@@ -159,7 +155,7 @@ impl<Node: PartialEq + Clone + Debug, Edge: PartialEq + Clone + Debug> AbstractG
         }
     }
 
-    fn add_node(&mut self, node: Node) -> Result<usize, Error> {
+    pub fn add_node(&mut self, node: Node) -> Result<usize, Error> {
         if self.nodes.contains(&node) {
             Err(Error::NodeAlreadyExists)
         } else {
@@ -169,7 +165,7 @@ impl<Node: PartialEq + Clone + Debug, Edge: PartialEq + Clone + Debug> AbstractG
         }
     }
 
-    fn remove_node(&mut self, node_id: usize) -> Result<(), Error> {
+    pub fn remove_node(&mut self, node_id: usize) -> Result<(), Error> {
         if self.nodes.len() < node_id {
             return Err(Error::NoSuchNode);
         }
@@ -182,7 +178,7 @@ impl<Node: PartialEq + Clone + Debug, Edge: PartialEq + Clone + Debug> AbstractG
             for (j, (_, to)) in list.iter_mut().enumerate() {
                 if to == &node_id {
                     to_delete[i].push(j);
-                } else if to < &mut node_id.clone() {
+                } else if to > &mut node_id.clone() {
                     *to -= 1;
                 }
             }
