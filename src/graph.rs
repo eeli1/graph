@@ -65,10 +65,8 @@ impl<Node: PartialEq + Clone + Debug, Edge: PartialEq + Clone + Debug> Graph<Nod
     }
 
     pub fn add_edge(&mut self, from: usize, to: usize, edge: Edge) -> Result<(), Error> {
-        if from < self.nodes.len() || to < self.nodes.len() {
+        if from > self.nodes.len() - 1 || to > self.nodes.len() - 1 {
             Err(Error::NoSuchNode)
-        } else if self.adj_list[from].iter().position(|x| x.1 == to) == None {
-            Err(Error::EdgeAlreadyExists)
         } else {
             self.adj_list[from].push((edge, to));
             Ok(())
