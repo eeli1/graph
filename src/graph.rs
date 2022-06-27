@@ -177,7 +177,7 @@ impl<Node: PartialEq + Clone + Debug, Edge: PartialEq + Clone + Debug> Graph<Nod
         } else {
             self.nodes.push(node);
             self.adj_list.push(Vec::new());
-            Ok(self.nodes.len())
+            Ok(self.nodes.len() - 1)
         }
     }
 
