@@ -43,13 +43,13 @@ impl<Node: PartialEq + Clone + Debug, Edge: PartialEq + Clone + Debug> Graph<Nod
         result
     }
 
-    pub fn edge(&self, from: usize, to: usize) -> Option<Edge> {
+    pub fn edge(&self, from: usize, to: usize) -> Result<Edge, Error> {
         for (edge, i) in self.adj_list[from].clone() {
             if to == i {
-                return Some(edge.clone());
+                return Ok(edge.clone());
             }
         }
-        None
+        Err(Error::NoSuchEdge)
     }
 
     pub fn edge_list(&self) -> Vec<Vec<(Edge, usize)>> {
@@ -139,11 +139,11 @@ impl<Node: PartialEq + Clone + Debug, Edge: PartialEq + Clone + Debug> Graph<Nod
         result
     }
 
-    pub fn node(&self, node_id: usize) -> Result<Node, Error> {
+    pub fn node(&mut self, node_id: usize) -> Result<&mut Node, Error> {
         if self.nodes.len() < node_id {
             Err(Error::NoSuchNode)
         } else {
-            Ok(self.nodes[node_id].clone())
+            Ok(&mut self.nodes[node_id])
         }
     }
 
