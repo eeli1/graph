@@ -56,6 +56,14 @@ impl<Node: PartialEq + Clone + Debug, Edge: PartialEq + Clone + Debug> Graph<Nod
         self.adj_list.clone()
     }
 
+    pub fn out_edges(&self, node_id: usize) -> Result<Vec<(Edge, usize)>, Error> {
+        if node_id < self.nodes.len() {
+            Ok(self.adj_list[node_id].clone())
+        } else {
+            Err(Error::NoSuchEdge)
+        }
+    }
+
     pub fn add_edge(&mut self, from: usize, to: usize, edge: Edge) -> Result<(), Error> {
         if from < self.nodes.len() || to < self.nodes.len() {
             Err(Error::NoSuchNode)
