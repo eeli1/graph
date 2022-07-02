@@ -1,6 +1,7 @@
+pub mod algo;
 mod graph;
 
-pub use graph::Graph;
+pub use crate::graph::Graph;
 
 #[derive(Clone, Debug, PartialEq)]
 /// Graph operation error
@@ -14,13 +15,15 @@ pub enum Error {
     /// Could not add an edge to the graph
     CannotAddEdge,
 
-    // This node already exists
+    /// This node already exists
     NodeAlreadyExists,
 
-    // This edge already exists
+    /// This edge already exists
     EdgeAlreadyExists,
 
     /// The operation cannot be performed as it will
     /// create a cycle in the graph.
     CycleError,
+
+    NoSuchPath,
 }
