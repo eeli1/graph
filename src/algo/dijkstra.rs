@@ -103,12 +103,17 @@ impl<T: PartialOrd + Clone> MinHeap<T> {
     }
 }
 
-pub fn dijkstra<Node: PartialEq + Clone + Debug, Edge: PartialEq + Clone + Debug>(
+pub fn dijkstra<Node, Edge, F>(
     graph: Graph<Node, Edge>,
     start_id: usize,
     end_id: usize,
-    get_weight: &dyn Fn(Edge) -> usize,
-) -> Result<HashMap<usize, usize>, Error> {
+    get_weight: F,
+) -> Result<HashMap<usize, usize>, Error>
+where
+    Node: PartialEq + Clone + Debug,
+    Edge: PartialEq + Clone + Debug,
+    F: Fn(&Edge) -> usize,
+{
     let mut dist = HashMap::new(); // = vec![usize::MAX; graph.node_len()];
 
     let mut min_heap = MinHeap::new();
@@ -123,7 +128,7 @@ pub fn dijkstra<Node: PartialEq + Clone + Debug, Edge: PartialEq + Clone + Debug
         }
 
         for (edge, end_id) in graph.out_edges(id)? {
-            let new_dist = dist.get(&id).unwrap() + get_weight(edge);
+            let new_dist = dist.get(&id).unwrap() + get_weight(&edge);
             if &new_dist < dist.get(&end_id).unwrap() {
                 dist.insert(end_id, new_dist);
                 min_heap.insert((end_id, new_dist));

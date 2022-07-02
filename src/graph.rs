@@ -170,13 +170,9 @@ impl<Node: PartialEq + Clone + Debug, Edge: PartialEq + Clone + Debug> Graph<Nod
     }
 
     pub fn add_node(&mut self, node: Node) -> Result<usize, Error> {
-        if self.nodes.contains(&node) {
-            Err(Error::NodeAlreadyExists)
-        } else {
-            self.nodes.push(node);
-            self.adj_list.push(Vec::new());
-            Ok(self.nodes.len() - 1)
-        }
+        self.nodes.push(node);
+        self.adj_list.push(Vec::new());
+        Ok(self.nodes.len() - 1)
     }
 
     pub fn remove_node(&mut self, node_id: usize) -> Result<(), Error> {

@@ -28,7 +28,6 @@ impl UnionFind {
         return r;
     }
 
-
     #[allow(dead_code)]
     fn union(&mut self, node_id1: usize, node_id2: usize) -> usize {
         let r1 = self.find_rep(node_id1);
@@ -64,13 +63,15 @@ impl UnionFind {
     }
 }
 
-pub fn find_mst<Node: PartialEq + Clone + Debug, Edge: PartialEq + Clone + Debug>(
-    graph: Graph<Node, Edge>,
-    get_weight: &dyn Fn(Edge) -> usize,
-) -> Vec<(usize, usize, Edge)> {
+pub fn find_mst<Node, Edge, F>(graph: Graph<Node, Edge>, get_weight: F) -> Vec<(usize, usize, Edge)>
+where
+    Node: PartialEq + Clone + Debug,
+    Edge: PartialEq + Clone + Debug,
+    F: Fn(&Edge) -> usize,
+{
     let mut edges = graph.edges();
 
-    edges.sort_by(|(_, _, x1), (_, _, x2)| get_weight(x1.clone()).cmp(&get_weight(x2.clone())));
+    edges.sort_by(|(_, _, x1), (_, _, x2)| get_weight(x1).cmp(&get_weight(x2)));
 
     let mut result = Vec::new();
     let mut union_find = UnionFind::new(graph.node_len());
