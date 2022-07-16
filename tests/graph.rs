@@ -22,4 +22,8 @@ fn crate_graph() {
     graph.add_edge(id1, id2, Edge { weight: 1 }).unwrap();
     graph.add_edge(id1, id3, Edge { weight: 1 }).unwrap();
     graph.add_edge(id3, id1, Edge { weight: 1 }).unwrap();
+
+    assert_eq!(graph.is_dag(), false);
+    assert_eq!(graph.remove_edge(id3, id1, Edge { weight: 1 }), true);
+    assert_eq!(graph.is_dag(), true);
 }

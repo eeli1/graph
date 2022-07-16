@@ -2,6 +2,7 @@ use crate::Error;
 
 #[cfg(feature = "no_std")]
 use core::fmt::Debug;
+use std::collections::HashSet;
 #[cfg(not(feature = "no_std"))]
 use std::fmt::Debug;
 
@@ -200,5 +201,61 @@ impl<Node: PartialEq + Clone + Debug, Edge: PartialEq + Clone + Debug> Graph<Nod
             }
         }
         Ok(())
+    }
+
+    /// retruns `true` if graph is a [directed acyclic graph](https://en.wikipedia.org/wiki/Directed_acyclic_graph)
+    pub fn is_dag(&self) -> bool {
+        let mut stack = self.roots();
+        if stack.len() == 0 {
+            return false;
+        }
+
+        let mut visited = HashSet::new();
+
+        while let Some(next) = stack.pop() {
+            if !visited.insert(next) {
+                return false;
+            }
+            for (_, id) in self.adj_list[next].iter() {
+                stack.push(id.clone());
+            }
+        }
+        true
+    }
+
+    /// retruns all the ids of the root nodes
+    pub fn roots(&self) -> Vec<usize> {
+        let mut roots = Vec::new();
+        for (id, list) in self.inv_adj_list().iter().enumerate() {
+            if list.len() == 0 {
+                roots.push(id);
+            }
+        }
+        roots
+    }
+
+    /// retruns all the ids of the leafs nodes
+    /// in other words all nodes that have no neighbors
+    pub fn leafs(&self) -> Vec<usize> {
+        let mut leafs = Vec::new();
+        for (id, list) in self.adj_list().iter().enumerate() {
+            if list.len() == 0 {
+                leafs.push(id);
+            }
+        }
+        leafs
+    }
+
+    /// retruns the inverted adj_list
+    pub fn inv_adj_list(&self) -> Vec<Vec<usize>> {
+        let mut inv_adj = vec![Vec::new(); self.node_len()];
+
+        for (from, list) in self.adj_list().iter().enumerate() {
+            for to in list {
+                inv_adj[to.clone()].push(from);
+            }
+        }
+
+        inv_adj
     }
 }
